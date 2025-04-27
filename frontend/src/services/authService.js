@@ -3,7 +3,6 @@ import baseService from './baseService';
 const API_URL = '/api/v1/auth';
 
 export const authService = {
-  // Register a new user
   register: async (userData) => {
     try {
       const response = await baseService.post(`${API_URL}/register`, userData);
@@ -13,7 +12,6 @@ export const authService = {
     }
   },
 
-  // Login user
   login: async (credentials) => {
     try {
       const response = await baseService.post(`${API_URL}/login`, credentials);
@@ -23,7 +21,6 @@ export const authService = {
     }
   },
 
-  // Refresh tokens
   refreshToken: async (refreshToken) => {
     try {
       const response = await baseService.post(`${API_URL}/refresh-token`, { refreshToken });
@@ -33,7 +30,6 @@ export const authService = {
     }
   },
 
-  // Logout user
   logout: async (token) => {
     try {
       const response = await baseService.post(`${API_URL}/logout`, {}, {
@@ -47,7 +43,6 @@ export const authService = {
     }
   },
 
-  // Get current user profile
   getUserProfile: async (token) => {
     try {
       const response = await baseService.get(`${API_URL}/me`, {
@@ -61,7 +56,6 @@ export const authService = {
     }
   },
 
-  // Get all users (except current user)
   getAllUsers: async (token) => {
     try {
       const response = await baseService.get(`${API_URL}/all`, {

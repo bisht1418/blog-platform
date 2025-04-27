@@ -15,12 +15,10 @@ const HomePage = () => {
     }
   }, [dispatch, status]);
 
-  // Get the latest 3 blogs
   const latestBlogs = blogs.slice(0, 3);
 
   return (
     <div className="bg-white">
-      {/* Hero Section */}
       <div className="relative bg-gradient-to-r from-green-50 to-teal-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">

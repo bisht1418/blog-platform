@@ -7,13 +7,13 @@ export const blogService = {
       const params = { page, limit };
       if (tag) params.tag = tag;
       if (author) params.author = author;
-      
+
       const response = await baseService.get(`${baseService_URL}/posts`, { params });
       return response.data.data;
     } catch (error) {
       console.error('Error fetching posts:', error);
       throw error;
-    } 
+    }
   },
 
   getPostById: async (id) => {
@@ -48,7 +48,7 @@ export const blogService = {
 
   deletePost: async (id) => {
     try {
-      const response = await baseService.delete(`/${baseService_URL}/posts/${id}`);
+      const response = await baseService.delete(`${baseService_URL}/posts/${id}`);
       return response.data;
     } catch (error) {
       console.error('Error deleting post:', error);
@@ -70,7 +70,7 @@ export const blogService = {
     try {
       const params = { page, limit };
       if (status) params.status = status;
-      
+
       const response = await baseService.get(`${baseService_URL}/posts/user/me`, { params });
       return response.data.data;
     } catch (error) {
@@ -95,7 +95,7 @@ export const blogService = {
     try {
       const commentData = { content };
       if (parentId) commentData.parentId = parentId;
-      
+
       const response = await baseService.post(`${baseService_URL}/comments/post/${postId}`, commentData);
       return response.data.data.comment;
     } catch (error) {

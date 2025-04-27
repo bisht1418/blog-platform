@@ -11,14 +11,14 @@ import { BrowserRouter } from "react-router-dom";
 function App() {
   const persisted = persistStore(store);
   return (
-      <Provider store={store}>
-        <PersistGate persistor={persisted}>
-          <ToastContainer />
-          <BrowserRouter>
-            <AllRoutes />
-          </BrowserRouter>
-        </PersistGate>
-      </Provider>
+    <Provider store={store}>
+      <PersistGate persistor={persisted}>
+        <ToastContainer />
+        <BrowserRouter>
+          <AllRoutes />
+        </BrowserRouter>
+      </PersistGate>
+    </Provider>
   );
 }
 

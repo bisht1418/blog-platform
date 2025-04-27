@@ -11,7 +11,6 @@ const BlogListPage = () => {
     status = "idle",
     filteredTags = [],
   } = useSelector((state) => state.blogs || {});
-  useSelector((state) => console.log(state));
 
   const [searchTerm, setSearchTerm] = useState("");
   const [availableTags, setAvailableTags] = useState([]);
@@ -58,8 +57,6 @@ const BlogListPage = () => {
 
     return matchesSearch && matchesTags;
   });
-
-  console.log("filteredBlogs", filteredBlogs);
 
   return (
     <div className="bg-gray-50 min-h-screen">

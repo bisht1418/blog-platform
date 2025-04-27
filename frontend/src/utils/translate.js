@@ -4,8 +4,7 @@ import { store } from "../redux/store";
 
 
 const t = (text) => {
-  const currentLang = store.getState().global.current_language;
-  console.log(currentLang);
+  const currentLang = store.getState().global.current_language;x
   if (currentLang === "en") {
     return en[text];
   } else if (currentLang === "it") {

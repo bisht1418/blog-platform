@@ -17,15 +17,17 @@ import {
   Trash2,
   ArrowLeft,
 } from "lucide-react";
+import ConfirmModal from "../components/ConfirmModal";
 
 const BlogPostPage = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { currentBlog, status, error } = useSelector((state) => state.blogs);
+  const { currentPost=[], status, error } = useSelector((state) => state.blogs);
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const [commentText, setCommentText] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   useEffect(() => {
     dispatch(fetchPostById(id));
@@ -36,15 +38,8 @@ const BlogPostPage = () => {
     if (commentText.trim() && isAuthenticated) {
       dispatch(
         createComment({
-          blogId: id,
-          comment: {
-            text: commentText,
-            author: {
-              id: user.id,
-              name: user.name,
-              avatar: user.avatar,
-            },
-          },
+          postId: id,
+          content: commentText,
         })
       );
       setCommentText("");
@@ -57,13 +52,31 @@ const BlogPostPage = () => {
     }
   };
 
-  const handleDelete = () => {
-    if (window.confirm("Are you sure you want to delete this blog post?")) {
-      dispatch(deletePost(id)).then(() => {
-        navigate("/blogs");
-      });
-    }
+  const handleDeleteClick = () => {
+    setShowConfirm(true);
   };
+
+  const handleConfirmDelete = () => {
+    dispatch(deletePost(id)).then(() => {
+      navigate("/blogs");
+    });
+    setShowConfirm(false);
+  };
+
+  const handleCancelDelete = () => {
+    setShowConfirm(false);
+  };
+
+  useEffect(() => {
+    if (showConfirm) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [showConfirm]);
 
   if (status === "loading") {
     return (
@@ -107,7 +120,7 @@ const BlogPostPage = () => {
     );
   }
 
-  if (!currentBlog) {
+  if (!currentPost) {
     return (
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center">
@@ -124,7 +137,8 @@ const BlogPostPage = () => {
     );
   }
 
-  const isAuthor = isAuthenticated && user && currentBlog.author.id === user.id;
+  const isAuthor =
+    isAuthenticated && user && currentPost.author._id === user._id;
 
   return (
     <div className="bg-white min-h-screen">
@@ -141,21 +155,24 @@ const BlogPostPage = () => {
           <div className="p-6">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center">
-                <img
-                  className="h-10 w-10 rounded-full"
-                  src={
-                    currentBlog.author.avatar ||
-                    "/placeholder.svg?height=40&width=40"
-                  }
-                  alt={currentBlog.author.name}
-                />
+                <div className="h-[3rem] w-[3rem]  rounded-full border-1 border-white bg-white overflow-hidden flex items-center justify-center text-gray-700">
+                  <div className="h-full w-full flex items-center justify-center  font-bold bg-gray-200">
+                    {currentPost.author.name
+                      ?.split(" ")
+                      .filter((word) => word.length > 0)
+                      .map((word) => word[0])
+                      .filter((_, index) => index === 0 || index === 1)
+                      .join("")
+                      .toUpperCase()}
+                  </div>
+                </div>
                 <div className="ml-3">
                   <p className="text-sm font-medium text-gray-900">
-                    {currentBlog.author.name}
+                    {currentPost.author.name}
                   </p>
                   <p className="text-xs text-gray-500">
-                    {new Date(currentBlog.createdAt).toLocaleDateString()} •{" "}
-                    {new Date(currentBlog.createdAt).toLocaleTimeString()}
+                    {new Date(currentPost.createdAt).toLocaleDateString()} •{" "}
+                    {new Date(currentPost.createdAt).toLocaleTimeString()}
                   </p>
                 </div>
               </div>
@@ -173,14 +190,14 @@ const BlogPostPage = () => {
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
                       <div className="py-1">
                         <Link
-                          to={`/edit-blog/${currentBlog.id}`}
+                          to={`/edit-blog/${currentPost._id}`}
                           className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                         >
                           <Edit className="h-4 w-4 mr-2" />
                           Edit post
                         </Link>
                         <button
-                          onClick={handleDelete}
+                          onClick={handleDeleteClick}
                           className="flex items-center w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
                         >
                           <Trash2 className="h-4 w-4 mr-2" />
@@ -194,11 +211,11 @@ const BlogPostPage = () => {
             </div>
 
             <h1 className="text-3xl font-bold text-gray-900 mb-4">
-              {currentBlog.title}
+              {currentPost.title}
             </h1>
 
             <div className="flex flex-wrap gap-2 mb-6">
-              {currentBlog.tags.map((tag) => (
+              {currentPost.tags.map((tag) => (
                 <span
                   key={tag}
                   className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
@@ -210,7 +227,7 @@ const BlogPostPage = () => {
 
             <div className="prose max-w-none">
               <p className="text-gray-700 whitespace-pre-line">
-                {currentBlog.content}
+                {currentPost.content}
               </p>
             </div>
 
@@ -233,24 +250,24 @@ const BlogPostPage = () => {
                           : "text-gray-400"
                       }`}
                     />
-                    <span>{currentBlog.likes}</span>
+                    <span>{currentPost?.likes}</span>
                   </button>
 
                   <button className="flex items-center space-x-1 text-sm text-gray-500 hover:text-green-600">
                     <MessageCircle className="h-5 w-5" />
-                    <span>{currentBlog.comments.length}</span>
+                    <span>{currentPost?.comments?.length}</span>
                   </button>
 
-                  <button className="flex items-center space-x-1 text-sm text-gray-500 hover:text-green-600">
+                  {/* <button className="flex items-center space-x-1 text-sm text-gray-500 hover:text-green-600">
                     <Share2 className="h-5 w-5" />
                     <span>Share</span>
-                  </button>
+                  </button> */}
                 </div>
 
-                <button className="flex items-center space-x-1 text-sm text-gray-500 hover:text-green-600">
+                {/* <button className="flex items-center space-x-1 text-sm text-gray-500 hover:text-green-600">
                   <Bookmark className="h-5 w-5" />
                   <span>Save</span>
-                </button>
+                </button> */}
               </div>
             </div>
           </div>
@@ -258,17 +275,23 @@ const BlogPostPage = () => {
           {/* Comments Section */}
           <div className="bg-gray-50 p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">
-              Comments ({currentBlog.comments.length})
+              Comments ({currentPost?.comments?.length})
             </h2>
 
             {isAuthenticated ? (
               <form onSubmit={handleCommentSubmit} className="mb-8">
                 <div className="flex items-start space-x-4">
-                  <img
-                    className="h-10 w-10 rounded-full"
-                    src={user?.avatar || "/placeholder.svg?height=40&width=40"}
-                    alt={user?.name}
-                  />
+                  <div className="h-[3rem] w-[3rem]  rounded-full border-1 border-white bg-white overflow-hidden flex items-center justify-center text-gray-700">
+                    <div className="h-full w-full flex items-center justify-center  font-bold bg-gray-200">
+                      {user.name
+                        ?.split(" ")
+                        .filter((word) => word.length > 0)
+                        .map((word) => word[0])
+                        .filter((_, index) => index === 0 || index === 1)
+                        .join("")
+                        .toUpperCase()}
+                    </div>
+                  </div>
                   <div className="min-w-0 flex-1">
                     <div className="border border-gray-300 rounded-lg shadow-sm overflow-hidden focus-within:border-green-500 focus-within:ring-1 focus-within:ring-green-500">
                       <textarea
@@ -310,19 +333,22 @@ const BlogPostPage = () => {
               </div>
             )}
 
-            {currentBlog.comments.length > 0 ? (
+            {currentPost?.comments?.length > 0 ? (
               <div className="space-y-6">
-                {currentBlog.comments.map((comment) => (
-                  <div key={comment.id} className="flex space-x-4">
+                {currentPost?.comments?.map((comment) => (
+                  <div key={comment._id} className="flex space-x-4">
                     <div className="flex-shrink-0">
-                      <img
-                        className="h-10 w-10 rounded-full"
-                        src={
-                          comment.author.avatar ||
-                          "/placeholder.svg?height=40&width=40"
-                        }
-                        alt={comment.author.name}
-                      />
+                      <div className="h-[3rem] w-[3rem]  rounded-full border-1 border-white bg-white overflow-hidden flex items-center justify-center text-gray-700">
+                        <div className="h-full w-full flex items-center justify-center  font-bold bg-gray-200">
+                          {comment?.author?.name
+                            ?.split(" ")
+                            .filter((word) => word?.length > 0)
+                            .map((word) => word[0])
+                            .filter((_, index) => index === 0 || index === 1)
+                            .join("")
+                            .toUpperCase()}
+                        </div>
+                      </div>
                     </div>
                     <div className="flex-grow">
                       <div className="bg-white p-4 rounded-lg shadow-sm">
@@ -335,7 +361,7 @@ const BlogPostPage = () => {
                           </p>
                         </div>
                         <p className="mt-2 text-sm text-gray-700">
-                          {comment.text}
+                          {comment.content}
                         </p>
                       </div>
                       <div className="mt-2 flex items-center space-x-4 ml-2">
@@ -358,6 +384,13 @@ const BlogPostPage = () => {
           </div>
         </article>
       </div>
+      <ConfirmModal
+        isOpen={showConfirm}
+        onClose={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+        title="Delete Blog Post"
+        message="Are you sure you want to delete this blog post? This action cannot be undone."
+      />
     </div>
   );
 };

@@ -16,9 +16,6 @@ const ProfilePage = () => {
   const { userPosts = [], status: blogsStatus } = useSelector(
     (state) => state.blogs
   );
-
-  useSelector(state=>console.log(state))
-
   useEffect(() => {
     if (!isAuthenticated) {
       navigate("/login");
@@ -33,7 +30,7 @@ const ProfilePage = () => {
   }, [dispatch, isAuthenticated, navigate, blogsStatus]);
 
   if (!isAuthenticated) {
-    return null; // Will redirect in useEffect
+    return null; 
   }
 
   if (authStatus === "loading") {
@@ -136,7 +133,7 @@ const ProfilePage = () => {
                     className="bg-white overflow-hidden shadow rounded-lg border border-gray-200 transition-all duration-300 hover:shadow-md"
                   >
                     <div className="p-5">
-                      <Link to={`/userPosts/${blog.id}`} className="block mt-2">
+                      <Link to={`/blogs/${blog._id}`} className="block mt-2">
                         <h3 className="text-lg font-semibold text-gray-900 hover:text-green-600">
                           {blog.title}
                         </h3>
